@@ -43,7 +43,7 @@ class M5SAM {
     byte getListID();
     void setListID(byte idx);
     String getListString();
-    void nextList();
+    void nextList( bool renderAfter = true );
     void addList(String inLabel);
     void setListCaption(String inCaption);
     String keyboardGetString();
