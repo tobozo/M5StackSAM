@@ -15,7 +15,9 @@
 #define M5SAM_BTN_TITLE_MAX_SIZE 6
 #define M5SAM_MAX_SUBMENUS 8
 
-#define M5SAM_LIST_MAX_COUNT 32
+#ifndef M5SAM_LIST_MAX_COUNT
+#define M5SAM_LIST_MAX_COUNT 128
+#endif
 #define M5SAM_LIST_MAX_LABEL_SIZE 36
 #define M5SAM_LIST_PAGE_LABELS 6
 
@@ -41,7 +43,7 @@ class M5SAM {
     byte getListID();
     void setListID(byte idx);
     String getListString();
-    void nextList();
+    void nextList( bool renderAfter = true );
     void addList(String inLabel);
     void setListCaption(String inCaption);
     String keyboardGetString();

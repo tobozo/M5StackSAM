@@ -68,7 +68,7 @@ String M5SAM::getListString(){
   return list_labels[list_idx];
 }
 
-void M5SAM::nextList(){
+void M5SAM::nextList( bool renderAfter ){
   if(list_idx< list_page * M5SAM_LIST_PAGE_LABELS + list_lines - 1){
     list_idx++;
   }else{
@@ -79,7 +79,7 @@ void M5SAM::nextList(){
     }
     list_idx = list_page * M5SAM_LIST_PAGE_LABELS;
   }
-  showList();
+  if( renderAfter ) showList();
 }
 
 void M5SAM::drawListItem(byte inIDX, byte postIDX){
