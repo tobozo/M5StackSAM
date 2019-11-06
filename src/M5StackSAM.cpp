@@ -35,18 +35,18 @@ void M5SAM::clearList(){
 }
 
 void M5SAM::addList(String inStr){
-  if(inStr.length()<=M5SAM_LIST_MAX_LABEL_SIZE and inStr.length()>0 and list_count < M5SAM_LIST_MAX_COUNT){
+  if(inStr.length()<=listMaxLabelSize and inStr.length()>0 and list_count < M5SAM_LIST_MAX_COUNT){
     list_labels[list_count] = inStr;
     list_count++;
   }
   if(list_count>0){
-    if(list_count > M5SAM_LIST_PAGE_LABELS){
-      list_lastpagelines = list_count % M5SAM_LIST_PAGE_LABELS;
+    if(list_count > listPagination){
+      list_lastpagelines = list_count % listPagination;
       if(list_lastpagelines>0){
-        list_pages = (list_count - list_lastpagelines) / M5SAM_LIST_PAGE_LABELS;
+        list_pages = (list_count - list_lastpagelines) / listPagination;
         list_pages++;
       }else{
-        list_pages = list_count / M5SAM_LIST_PAGE_LABELS;
+        list_pages = list_count / listPagination;
       }
     }else{
       list_pages = 1;
@@ -58,10 +58,10 @@ byte M5SAM::getListID(){
   return list_idx;
 }
 void M5SAM::setListID(byte idx) {
-  if(idx< list_page * M5SAM_LIST_PAGE_LABELS + list_lines){
+  if(idx< list_page * listPagination + list_lines){
     list_idx = idx;
   }
-  list_page = list_idx / M5SAM_LIST_PAGE_LABELS;
+  list_page = list_idx / listPagination;
 }
 
 String M5SAM::getListString(){
@@ -69,7 +69,7 @@ String M5SAM::getListString(){
 }
 
 void M5SAM::nextList( bool renderAfter ){
-  if(list_idx< list_page * M5SAM_LIST_PAGE_LABELS + list_lines - 1){
+  if(list_idx< list_page * listPagination + list_lines - 1){
     list_idx++;
   }else{
     if(list_page<list_pages - 1){
@@ -77,50 +77,53 @@ void M5SAM::nextList( bool renderAfter ){
     }else{
       list_page = 0;
     }
-    list_idx = list_page * M5SAM_LIST_PAGE_LABELS;
+    list_idx = list_page * listPagination;
   }
   if( renderAfter ) showList();
 }
 
 void M5SAM::drawListItem(byte inIDX, byte postIDX){
       if(inIDX==list_idx){
-        M5.Lcd.drawString(list_labels[inIDX],15,80+(postIDX*20),2);                        
-        M5.Lcd.drawString(">",3,80+(postIDX*20),2);            
+        M5.Lcd.drawString(list_labels[inIDX],15,listPageLabelsOffset+(postIDX*20),2);
+        M5.Lcd.drawString(">",3,listPageLabelsOffset+(postIDX*20),2);
       }else{
-        M5.Lcd.drawString(list_labels[inIDX],15,80+(postIDX*20),2);            
+        M5.Lcd.drawString(list_labels[inIDX],15,listPageLabelsOffset+(postIDX*20),2);
       }
 }
 
 void M5SAM::showList(){
     windowClr();
     byte labelid = 0;
-    M5.Lcd.drawCentreString(listCaption,M5.Lcd.width()/2,45,2);
+    M5.Lcd.setTextDatum( listCaptionDatum );
+    //M5.Lcd.drawCentreString(listCaption,M5.Lcd.width()/2,45,2);
+    M5.Lcd.drawString(listCaption, listCaptionXPos, listCaptionYPos, 2);
+    M5.Lcd.setTextDatum( TL_DATUM );
     if((list_page + 1) == list_pages){
-      if(list_lastpagelines == 0 and list_count >= M5SAM_LIST_PAGE_LABELS){
-        list_lines = M5SAM_LIST_PAGE_LABELS;
-        for(byte i = 0;i<M5SAM_LIST_PAGE_LABELS;i++){
-          labelid = i+(list_page*M5SAM_LIST_PAGE_LABELS);      
+      if(list_lastpagelines == 0 and list_count >= listPagination){
+        list_lines = listPagination;
+        for(byte i = 0;i<listPagination;i++){
+          labelid = i+(list_page*listPagination);
           drawListItem(labelid,i);
         }
       }else{
         if(list_pages>1){
           list_lines = list_lastpagelines;
           for(byte i = 0;i<list_lastpagelines;i++){
-            labelid = i+(list_page*M5SAM_LIST_PAGE_LABELS);      
+            labelid = i+(list_page*listPagination);
             drawListItem(labelid,i);
           }            
         }else{
           list_lines = list_count;
           for(byte i = 0;i<list_count;i++){
-            labelid = i+(list_page*M5SAM_LIST_PAGE_LABELS);      
+            labelid = i+(list_page*listPagination);
             drawListItem(labelid,i);
           }                          
         }
       }
     }else{
-        list_lines = M5SAM_LIST_PAGE_LABELS;
-        for(byte i = 0;i<M5SAM_LIST_PAGE_LABELS;i++){
-            labelid = i+(list_page*M5SAM_LIST_PAGE_LABELS);      
+        list_lines = listPagination;
+        for(byte i = 0;i<listPagination;i++){
+            labelid = i+(list_page*listPagination);
             drawListItem(labelid,i);
         }          
     }  
@@ -148,7 +151,7 @@ void M5SAM::GoToLevel(byte inlevel){
 
 void M5SAM::execute(){
   if(menuList[levelIDX][menuIDX].gotoLevel==-1){
-    (*menuList[levelIDX][menuIDX].function)();      
+    (*menuList[levelIDX][menuIDX].function)();
   }else{
     GoToLevel(menuList[levelIDX][menuIDX].gotoLevel);
   }
@@ -229,7 +232,7 @@ void M5SAM::btnRestore(){
   M5.Lcd.drawCentreString(lastBtnTittle[2],221+30,M5.Lcd.height()-28+6,2);
   M5.Lcd.setTextColor(menutextcolor,windowcolor);     
 }
-
+/*
 void M5SAM::keyboardEnable(){
   pinMode(5, INPUT);
   attachInterrupt(digitalPinToInterrupt(5), keyboardIRQ, FALLING);
@@ -250,7 +253,7 @@ void M5SAM::keyboardIRQ(){
   }
   _keyboardIRQRcvd = HIGH;
 }
-
+*/
 void M5SAM::drawMenu(String inmenuttl, String inbtnAttl, String inbtnBttl, String inbtnCttl, unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intxtcolor){
   lastBtnTittle[0] = inbtnAttl;
   lastBtnTittle[1] = inbtnBttl;
