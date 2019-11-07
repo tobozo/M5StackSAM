@@ -20,6 +20,9 @@
 #define M5SAM_LIST_MAX_COUNT 128
 #endif
 
+#define M5SAM_LIST_MAX_LABEL_SIZE 36 // list labels will be trimmed
+#define M5SAM_LIST_PAGE_LABELS 6
+
 volatile static uint8_t _keyboardIRQRcvd;
 volatile static uint8_t _keyboardChar;
 
@@ -47,8 +50,8 @@ class M5SAM {
     void setListCaption(String inCaption);
     String keyboardGetString();
     String lastBtnTittle[3];
-    uint8_t listMaxLabelSize = 36; // list labels will be trimmed
-    uint8_t listPagination = 6;
+    uint8_t listMaxLabelSize = M5SAM_LIST_MAX_LABEL_SIZE; // list labels will be trimmed
+    uint8_t listPagination = M5SAM_LIST_PAGE_LABELS;
     uint8_t listPageLabelsOffset = 80; // initially 80, pixels offset from top screen for list items
     uint8_t listCaptionDatum = TC_DATUM; // initially TC_DATUM=top centered, TL_DATUM=top left (default), top/right/bottom/left
     uint16_t listCaptionXPos = 160; // initially M5.Lcd.width()/2, text cursor position-x for list caption
