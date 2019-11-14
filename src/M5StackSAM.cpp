@@ -221,17 +221,7 @@ String M5SAM::keyboardGetString(){
   return tmp_str;
 }
 
-void M5SAM::btnRestore(){
-  M5.Lcd.setTextColor(menutextcolor);
-  M5.Lcd.fillRoundRect(0,M5.Lcd.height()-28,M5.Lcd.width(),28,3,0x00);
-  M5.Lcd.fillRoundRect(31,M5.Lcd.height()-28,60,28,3,menucolor);  
-  M5.Lcd.fillRoundRect(126,M5.Lcd.height()-28,60,28,3,menucolor);  
-  M5.Lcd.fillRoundRect(221,M5.Lcd.height()-28,60,28,3,menucolor);
-  M5.Lcd.drawCentreString(lastBtnTittle[0],31+30,M5.Lcd.height()-28+6,2);
-  M5.Lcd.drawCentreString(lastBtnTittle[1],126+30,M5.Lcd.height()-28+6,2);
-  M5.Lcd.drawCentreString(lastBtnTittle[2],221+30,M5.Lcd.height()-28+6,2);
-  M5.Lcd.setTextColor(menutextcolor,windowcolor);     
-}
+
 /*
 void M5SAM::keyboardEnable(){
   pinMode(5, INPUT);
@@ -254,21 +244,71 @@ void M5SAM::keyboardIRQ(){
   _keyboardIRQRcvd = HIGH;
 }
 */
-void M5SAM::drawMenu(String inmenuttl, String inbtnAttl, String inbtnBttl, String inbtnCttl, unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intxtcolor){
-  lastBtnTittle[0] = inbtnAttl;
-  lastBtnTittle[1] = inbtnBttl;
-  lastBtnTittle[2] = inbtnCttl;
-  M5.Lcd.fillRoundRect(31,M5.Lcd.height()-28,60,28,3,inmenucolor);  
-  M5.Lcd.fillRoundRect(126,M5.Lcd.height()-28,60,28,3,inmenucolor);  
-  M5.Lcd.fillRoundRect(221,M5.Lcd.height()-28,60,28,3,inmenucolor);  
-  M5.Lcd.fillRoundRect(0,0,M5.Lcd.width(),28,3,inmenucolor);  
+
+#ifdef ARDUINO_ODROID_ESP32
+
+  #define BUTTON_WIDTH 60
+  #define BUTTON_HWIDTH BUTTON_WIDTH/2 // 30
+  #define BUTTON_HEIGHT 28
+  uint16_t buttonsXOffset[4] = {
+    1, 72, 188, 260
+  };
+
+  void M5SAM::drawMenu(String inmenuttl, String inbtnAttl, String intSpeakerttl, String inbtnBttl, String inbtnCttl, unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intxtcolor) {
+    lastBtnTittle[1] = intSpeakerttl;
+    drawMenu(inmenuttl, inbtnAttl, inbtnBttl, inbtnCttl,  inmenucolor, inwindowcolor, intxtcolor);
+  }
+  void M5SAM::drawAppMenu(String inmenuttl, String inbtnAttl, String intSpeakerttl, String inbtnBttl, String inbtnCttl){
+    drawMenu(inmenuttl, inbtnAttl, intSpeakerttl, inbtnBttl, inbtnCttl, menucolor, windowcolor, menutextcolor);
+    M5.Lcd.setTextColor(menutextcolor,windowcolor);
+  }
+
+#else
+
+  #define BUTTON_WIDTH 60
+  #define BUTTON_HWIDTH BUTTON_WIDTH/2 // 30
+  #define BUTTON_HEIGHT 28
+  uint16_t buttonsXOffset[3] = {
+    31, 126, 221
+  };
+
+#endif
+
+void M5SAM::btnRestore(){
+  M5.Lcd.setTextColor(menutextcolor);
+  M5.Lcd.fillRoundRect(0,M5.Lcd.height()-BUTTON_HEIGHT,M5.Lcd.width(),BUTTON_HEIGHT,3,0x00);
+  for( byte i=0; i<BUTTONS_COUNT; i++ ) {
+    M5.Lcd.fillRoundRect(buttonsXOffset[i],M5.Lcd.height()-BUTTON_HEIGHT,BUTTON_WIDTH,BUTTON_HEIGHT,3,menucolor);
+    if( lastBtnTittle[i] != "" ) {
+      M5.Lcd.drawCentreString(lastBtnTittle[i],buttonsXOffset[i]+BUTTON_HWIDTH,M5.Lcd.height()-BUTTON_HEIGHT+6,2);
+    }
+  }
+  M5.Lcd.setTextColor(menutextcolor,windowcolor);
+}
+
+void M5SAM::drawMenu(String inmenuttl, String inbtnAttl, String inbtnBttl, String inbtnCttl, unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intxtcolor) {
+  #ifdef ARDUINO_ODROID_ESP32
+    lastBtnTittle[0] = inbtnAttl;
+    //lastBtnTittle[1] = "";
+    lastBtnTittle[2] = inbtnBttl;
+    lastBtnTittle[3] = inbtnCttl;
+  #else
+    lastBtnTittle[0] = inbtnAttl;
+    lastBtnTittle[1] = inbtnBttl;
+    lastBtnTittle[2] = inbtnCttl;
+  #endif
+  for( byte i=0; i<BUTTONS_COUNT; i++ ) {
+    M5.Lcd.fillRoundRect(buttonsXOffset[i],M5.Lcd.height()-BUTTON_HEIGHT,BUTTON_WIDTH,BUTTON_HEIGHT,3,inmenucolor);
+  }
+  M5.Lcd.fillRoundRect(0,0,M5.Lcd.width(),BUTTON_HEIGHT,3,inmenucolor);  
   M5.Lcd.fillRoundRect(0,32,M5.Lcd.width(),M5.Lcd.height()-32-32,3,inwindowcolor);  
     
   M5.Lcd.setTextColor(intxtcolor);
   M5.Lcd.drawCentreString(inmenuttl,M5.Lcd.width()/2,6,2);
-
-  M5.Lcd.drawCentreString(inbtnAttl,31+30,M5.Lcd.height()-28+6,2);
-  M5.Lcd.drawCentreString(inbtnBttl,126+30,M5.Lcd.height()-28+6,2);
-  M5.Lcd.drawCentreString(inbtnCttl,221+30,M5.Lcd.height()-28+6,2);  
+  for( byte i=0; i<BUTTONS_COUNT; i++ ) {
+    if( lastBtnTittle[i] != "" ) {
+      M5.Lcd.drawCentreString(lastBtnTittle[i],buttonsXOffset[i]+BUTTON_HWIDTH,M5.Lcd.height()-BUTTON_HEIGHT+6,2);
+    }
+  }
 }
 
