@@ -26,6 +26,11 @@
 volatile static uint8_t _keyboardIRQRcvd;
 volatile static uint8_t _keyboardChar;
 
+#ifdef ARDUINO_ODROID_ESP32
+  #define BUTTONS_COUNT 4
+#else
+  #define BUTTONS_COUNT 3
+#endif
 
 class M5SAM {
   public:
@@ -36,6 +41,9 @@ class M5SAM {
     void windowClr();
     void setColorSchema(unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intextcolor);
     void drawAppMenu(String inmenuttl, String inbtnAttl, String inbtnBttl, String inbtnCttl);
+    #ifdef ARDUINO_ODROID_ESP32
+    void drawAppMenu(String inmenuttl, String inbtnAttl, String intSpeakerttl, String inbtnBttl, String inbtnCttl);
+    #endif
     void GoToLevel(byte inlevel);
     unsigned int getrgb(byte inred, byte ingrn, byte inblue);
     void addMenuItem(byte levelID, const char *menu_title,const char *btnA_title,const char *btnB_title,const char *btnC_title, signed char goto_level, void(*function)());
@@ -49,7 +57,7 @@ class M5SAM {
     void addList(String inLabel);
     void setListCaption(String inCaption);
     String keyboardGetString();
-    String lastBtnTittle[3];
+    String lastBtnTittle[BUTTONS_COUNT];
     uint8_t listMaxLabelSize = M5SAM_LIST_MAX_LABEL_SIZE; // list labels will be trimmed
     uint8_t listPagination = M5SAM_LIST_PAGE_LABELS;
     uint8_t listPageLabelsOffset = 80; // initially 80, pixels offset from top screen for list items
@@ -65,8 +73,10 @@ class M5SAM {
     void keyboardEnable();
     void keyboardDisable();
     static void keyboardIRQ();
-
     void drawMenu(String inmenuttl, String inbtnAttl, String inbtnBttl, String inbtnCttl, unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intxtcolor);
+    #ifdef ARDUINO_ODROID_ESP32
+    void drawMenu(String inmenuttl, String inbtnAttl, String intSpeakerttl, String inbtnBttl, String inbtnCttl, unsigned int inmenucolor, unsigned int inwindowcolor, unsigned int intxtcolor);
+    #endif
     struct MenuCommandCallback {
       char title[M5SAM_MENU_TITLE_MAX_SIZE + 1];
       char btnAtitle[M5SAM_BTN_TITLE_MAX_SIZE + 1];
